@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+  <div id="app" style="width: 100%;">
+    <div style="width: 100%;float: left;">
+	
+	<div style="width:100%;height:50px;margin-bottom: 0.1333rem;">
+	  
+	  <el-input class='put' v-model="sai.f_name" placeholder="户主姓名" clearable></el-input>
+	  <el-input class='put' v-model="sai.w_card" placeholder="身份证" clearable></el-input>  
+	  <el-input class='put' v-model="sai.t_compay" placeholder="乡镇 / 填报单位" clearable></el-input>  
+	  
+	  <el-select class='put' style='width:150px;' v-model='sai.w_out' placeholder="是否外出" clearable>
+	    <el-option label="是" value="1"></el-option>
+	    <el-option label="否" value="0"></el-option>
+	  </el-select>
+	  <el-button @click='git_active(1)' type="success">查询</el-button>
+	  
+	  <input @change="handleFile" type="file" id="excel-file" style="BACKGROUND-COLOR: transparent;opacity:0;display: none;">
+	  <el-button @click='update' style='float:right;margin-top:5px;' type="primary">上传 excel<i class="el-icon-upload el-icon--right"></i></el-button>
+	  <el-button @click='create' style='float:right;margin-right:15px;margin-top:5px;' type="primary">新增</el-button>
+	  <el-button @click='biao_show=true' style='float:right;margin-right:15px;margin-top:5px;' type="primary">统计表</el-button>
+	  
+	</div>
+	
+	<el-table style='border-top:1px solid #99A9BF;' size='mini' :data="tableData" stripe style="width: 100%;" header-align='center'  :height="heights" ref="multipleTable" tooltip-effect="dark" @selection-change="handleSelectionChange">
+		<el-table-column type="selection" width="30"></el-table-column>
+		
+	   <el-table-column fixed header-align='center' prop="f_name" label="户主姓名" width="100" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="f_tel" label="户主联系电话" width="130" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_name" label="务工人员姓名" width="140" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_sex" label="务工人员性别" width="150" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_card" label="务工人员身份证号" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_tel" label="务工人员联系电话" width="150" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_body" label="疫情期间身体状况" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_out" label="是否已外出（是/否）" width="120" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_company" label="务工企业名称" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_area" label="区域（县内/县外）" width="130" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_type" label="工种" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_work" label="疫情过后是否愿意留在县工业园区就业（是/否）" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="t_compay" label="填报单位" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="t_time" label="填报时间" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="province" label="企业所在地的" width="180" align='center'></el-table-column>
+	    <el-table-column fixed="right" header-align='center' align='center' label="操作" width="150">
+	         <template slot-scope="scope">
+				 <!-- 编辑 -->
+	            <el-button @click='putate' type="primary" icon="el-icon-edit" circle></el-button>
+				<!-- 删除 -->
+	             <el-button type="danger" @click='delect_date(scope.row)' icon="el-icon-delete" circle></el-button>
+	         </template>
+	    </el-table-column>
+	</el-table>
+	
+	<div style="margin:10px 20px;float: left;">
+	    <el-button @click='$refs.multipleTable.clearSelection();'>取消选择</el-button>
+		 <el-button type="danger" @click='delect_date()' >批量删除</el-button>
+	  </div>
+	 <!-- 分页插件 --> 
+	  <div style="float:right;margin:10px;">
+	     <el-pagination background @size-change="handleSizeChange"
+	     @current-change="handleCurrentChange"
+	     :page-sizes="ye_s"
+	     :page-size="100"
+	     layout="total, sizes, prev, pager, next, jumper"
+	     :total="total_01">
+	     </el-pagination>
+	    </div>
+	  
+   </div> 
+	
+	
+<!-- 新增、编辑弹窗 -->
+	<el-dialog title="新增/编辑" :visible.sync="dialogFormVisible" top='3vh'>
+	  <el-form>
+	    <el-form-item label="户主姓名" :label-width="formLabelWidth">
+			<el-input v-model="create_date.f_name" autocomplete="off"></el-input>
+		</el-form-item>
+	    <el-form-item label="户主联系电话" :label-width="formLabelWidth">
+	    	<el-input v-model="create_date.f_tel" autocomplete="off"></el-input>
+	    </el-form-item>
+		<el-form-item label="务工人员姓名" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_name" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="务工人员性别" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_sex" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="务工人员身份证号" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_card" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="务工人员联系电话" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_tel" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="疫情期间身体状况" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_body" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="是否已外出（是/否）" :label-width="formLabelWidth">
+			<el-select v-model="create_date.w_out" placeholder="请选择">
+			  <el-option label="是" value="1"></el-option>
+			  <el-option label="否" value="0"></el-option>
+			</el-select>
+		</el-form-item>
+		<el-form-item label="务工企业名称" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_company" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="区域（县内/县外）" :label-width="formLabelWidth">
+			<!-- <el-input v-model="form.name" autocomplete="off"></el-input> -->
+			<el-select v-model="create_date.w_area" placeholder="请选择">
+			  <el-option label="县内" value="1"></el-option>
+			  <el-option label="县外" value="0"></el-option>
+			</el-select>
+		</el-form-item>
+		<el-form-item label="工种" :label-width="formLabelWidth">
+			<el-input v-model="create_date.w_type" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="疫情过后是否愿意留在县工业园区就业（是/否）" :label-width="formLabelWidth">
+			<el-select v-model="create_date.w_work" placeholder="请选择">
+			  <el-option label="是" value="1"></el-option>
+			  <el-option label="否" value="0"></el-option>
+			</el-select>
+		</el-form-item>
+		<el-form-item label="填报单位" :label-width="formLabelWidth">
+			<el-input v-model="create_date.t_compay" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="填报时间" :label-width="formLabelWidth">
+			<el-input v-model="create_date.t_time" autocomplete="off"></el-input>
+		</el-form-item>
+		<el-form-item label="企业所在地" :label-width="formLabelWidth">
+			<el-input v-model="create_date.province" autocomplete="off"></el-input>
+		</el-form-item>
+	  </el-form>
+	  <div slot="footer" class="dialog-footer">
+	    <el-button @click="dialogFormVisible = false">取 消</el-button>
+	    <el-button type="primary" @click="create_git">确 定</el-button>
+	  </div>
+	</el-dialog>
+	
+	<el-dialog title="统计报表" :visible.sync="biao_show" top='3vh' width='60%'>
+	    <iframe src="biao.html" width="100%" height="500" style="border:none;"></iframe>
+	</el-dialog>
+	
+	
+  </div>
+</body>
+
+<style>
+  .put{
+	  width: 250px;
+	  margin: 5px;
+  }
+  
+</style>
+  <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+  <!-- import Vue before Element -->
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+	  computed:{
+		  heights(){return ($(window).height()-120)},
+	  },
+      data: function() {
+        return {
+			sai:{//赛选条件
+				f_name:'',
+				w_card:'',
+				t_compay:'',
+				w_out:'',
+				page:1,
+				size:10
+			},
+			create_date:{//新增、编辑数据
+				f_name:'',//户主姓名
+				f_tel:'',
+				w_name:'',
+				w_sex:'',
+				w_card:'',
+				w_tel:'',
+				w_body:'',
+				w_out:'',
+				w_company:'',
+				w_area:'',
+				w_type:'',
+				w_work:'',
+				t_compay:'',
+				t_time:'',
+				province:''
+			},
+			
+			
+			dialogFormVisible:false,
+			form:{name:'',region:'0'},
+			biao_show:false,
+			formLabelWidth: '220px',
+			total_01:0,//分页-总条数
+			ye_s:[10,15,20],
+			tiao:10,
+			pages:1,
+			
+			arenu:0,//0==新增 1==编辑
+			tableData: [],
+			multipleTable:[],
+			date_url:'',//全局域名
+		}
+      },
+	  methods:{
+		  qin_date(){//清空添加编辑内容数据
+			this.create_date.f_name = '';this.create_date.f_name='';
+			this.create_date.f_tel='';this.create_date.w_name='';
+			this.create_date.w_sex='';this.create_date.w_card='';
+			this.create_date.w_tel='';this.create_date.w_body='';
+		    this.create_date.w_out='';this.create_date.w_company='';
+			                 this.create_date.w_area='';
+			                 this.create_date.w_type='';
+			                 this.create_date.w_work='';
+			                 this.create_date.t_compay='';
+			                 this.create_date.t_time='';
+							 this.create_date.province = ''
+		  },
+		  
+		  
+		  git_active(pages){//请求数据
+		      this.sai.page = pages;//页数
+			  this.sai.size = this.tiao;//条数
+			  $.ajax({
+			    url:this.date_url+'/index/index/query',
+			    type: 'post',
+			    // 设置的是请求参数
+			    data:this.sai,
+			    dataType: 'json',
+			    success: function (res) {
+			       this.tableData = res.data;
+			    }
+			  })
+		  },
+		  
+		  create_git(){//新增数据
+		    if(this.create_date.f_name){}else{this.$message({type: 'warning',message: '户主姓名不能为空！'});return false;}
+			if(this.create_date.f_tel){}else{this.$message({type: 'warning',message: '户主联系电话不能为空！'});return false;}
+			if(this.create_date.w_name){}else{this.$message({type: 'warning',message: '务工人员姓名不能为空！'});return false;}
+			if(this.create_date.w_sex){}else{this.$message({type: 'warning',message: '务工人员性别不能为空！'});return false;}
+			if(this.create_date.w_card){}else{this.$message({type: 'warning',message: '务工人员身份证号码不能为空！'});return false;}
+			if(this.create_date.w_tel){}else{this.$message({type: 'warning',message: '务工人员联系电话不能为空！'});return false;}
+			if(this.create_date.w_body){}else{this.$message({type: 'warning',message: '身体状况不能为空！'});return false;}
+			if(this.create_date.w_out){}else{this.$message({type: 'warning',message: '是否已外出不能为空！'});return false;}
+			if(this.create_date.w_company){}else{this.$message({type: 'warning',message: '务工企业名称不能为空！'});return false;}
+			if(this.create_date.w_area){}else{this.$message({type: 'warning',message: '区域不能为空！'});return false;}
+			if(this.create_date.w_type){}else{this.$message({type: 'warning',message: '工种不能为空！'});return false;}
+			if(this.create_date.w_work){}else{this.$message({type: 'warning',message: '是否愿意留在县工业园区就业不能为空！'});return false;}
+			if(this.create_date.t_compay){}else{this.$message({type: 'warning',message: '填报单位不能为空！'});return false;}
+			if(this.create_date.t_time){}else{this.$message({type: 'warning',message: '填报时间不能为空！'});return false;}
+			if(this.create_date.province){}else{this.$message({type: 'warning',message: '企业所在地不能为空！'});return false;}
+		    let ur = this.arenu==0?'/index/index/save':'/index/index/modify';
+			$.ajax({
+			  url: this.date_url+ur,
+			  type: 'post',
+			  // 设置的是请求参数
+			  data:this.create_date,
+			  dataType: 'json',
+			  success: function (res) {
+			     this.dialogFormVisible = false;//关闭弹窗
+				 this.$message({type: 'success',message: '添加成功'});
+				 this.git_active(this.pages);//更新数据
+				 this.qin_date()//清除输入的数据
+			  }
+			})
+		  },
+		  
+		  delect_date(i){//删除||批量删除
+		    if(i){}else{return false}
+		    this.$confirm('是否确认删除?', '提示', {
+		              confirmButtonText: '确定',
+		              cancelButtonText: '取消',
+		              type: 'warning'
+		            }).then(() => {
+						let box= [];
+						if(i.length==1){
+							box=[];
+							box.push(i)
+						}else{
+							for(var i=0;i<i.length;i++){
+								box.push(i.id);
+							}
+						}
+						$.ajax({
+						  url: this.date_url+'/index/index/batch_delete',
+						  type: 'post',
+						  // 设置的是请求参数
+						  data:box,
+						  dataType: 'json',
+						  success: function (res) {
+						     this.git_active(this.pages);//更新数据
+							 this.$message({type: 'success',message: '删除成功!'});
+						  }
+						})
+		            }).catch(() => {});
+		  },
+		  
+		  create(){//新增
+		      this.arenu = 0;
+			  this.dialogFormVisible = true;
+		  },
+		  putate(i){//编辑
+		      this.arenu = 1;
+		      this.create_date = i;
+			  this.dialogFormVisible = true;
+		  },
+		  
+		  update(){//
+			  document.querySelector("#excel-file").click();//事件委托
+		  },
+		  handleFile(e){//上传文件事件
+		         let fil = e.target.files[0];
+		         var formData = new FormData();
+		         formData.append("flie",fil);
+		         $('#excel-file').val('');//实现可以上传同一个文件
+			     $.ajax({
+			       url: this.date_url+'/index/index/save_all',
+			       type: 'post',
+			       // 设置的是请求参数
+			        data: formData,
+			        contentType: false,
+			        processData: false,
+			       dataType: 'json',
+			       success: function (res) {
+			          this.git_active(this.pages);//更新数据
+			       }
+			     })
+		  },
+		  
+		   handleSelectionChange(val) {
+		          this.multipleSelection = val;//勾选的项
+		   },
+		   //分页相关函数
+		    handleSizeChange(val) {
+		     console.log(`每页 ${val} 条`);
+			 this.tiao = val;//每页条数
+		   },
+		   handleCurrentChange(val) {
+		     // console.log(`当前页: ${val}`);
+				this.pages = val;
+				this.git_active(this.pages);//获取数据
+		   },
+		   log(i){console.log(i)},
+	  },
+	  mounted(){
+		  
+		  if(sessionStorage.id){}else{window.location.href = './static/login.html'}
+		  
+		  
+	  },
+	  
+    })
+  </script>
+</html>
