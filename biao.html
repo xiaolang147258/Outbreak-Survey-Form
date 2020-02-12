@@ -17,14 +17,12 @@
 <body>
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
 	
-	
-	
     <div id="main" style="width: 750px;height:400px;margin: 0 auto;"></div>
 	
 	<div style="width: 46.875rem;height:40px;margin:0 auto;margin-top:40px;">
 		<button id="btn1" class="btn">外出务工，本地务工</button>
 		<button id='btn2' class="btn">各乡镇外出务工人数</button>
-		<button id="btn3" class="btn">外出务工人员各省分布情况</button>
+		<!-- <button id="btn3" class="btn">外出务工人员各省分布情况</button> -->
 	</div>
 	
 	<script src="./static/js/jquery.min.js" type="text/javascript"></script>
@@ -61,8 +59,6 @@
 							　　　　　　textStyle : {fontWeight : 'normal',fontSize : 15}
 							　　　　}
 							　　},
-							
-							
                         }
             ]
         };
@@ -74,18 +70,30 @@
 		           {value:452, name:'各乡镇外出务工人数'},
 				   {value:752, name:'外出务工人员各'},
 				  ];
-        let dat2 = [{value:802, name:'地务工'},{value:152, name:'出务工人数'},{value:852, name:'外出务工人'}];
-		let dat3 = [{value:652, name:'，本地务工'},{value:252, name:'各乡镇外'},{value:352, name:'务工人员各'}];
-		charts('外出务工，本地务工',dat);//页面加载默认加载第一项数据
-		
+//ajax
+		function git_date(title,ids){
+				   $.ajax({
+				     url:'http://23347gd009.iok.la/index/index/querykeyword',
+				     type: 'post',
+				     // 设置的是请求参数
+				     data:{keyword:ids},
+				     dataType: 'json',
+				     success: function (res) {
+				        dat = res.data;
+						console.log(res)
+						charts(title,dat);
+				     }
+				 })  
+		};
+		git_date('外出务工，本地务工',1);//页面加载默认加载第一项数据
 		$('#btn1').on('click',()=>{
-			charts('外出务工，本地务工',dat);
+			git_date('外出务工，本地务工',1);//
 		})
 		$('#btn2').on('click',()=>{
-			charts('各乡镇外出务工人数',dat2);
+			git_date('各乡镇外出务工人数',2);//
 		})
 		$('#btn3').on('click',()=>{
-			charts('外出务工人员各省分布情况',dat3);
+			git_date('外出务工人员各省分布情况',3);//
 		})
 		
     </script>

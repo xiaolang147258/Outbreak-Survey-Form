@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <title>LSQ</title>
   <!-- import CSS -->
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 </head>
@@ -11,7 +12,7 @@
 	
 	<div style="width:100%;height:50px;margin-bottom: 0.1333rem;">
 	  
-	  <el-input class='put' v-model="sai.f_name" placeholder="户主姓名" clearable></el-input>
+	  <el-input class='put' v-model="sai.w_name" placeholder="务工人员姓名" clearable></el-input>
 	  <el-input class='put' v-model="sai.w_card" placeholder="身份证" clearable></el-input>  
 	  <el-input class='put' v-model="sai.t_compay" placeholder="乡镇 / 填报单位" clearable></el-input>  
 	  
@@ -28,9 +29,8 @@
 	  
 	</div>
 	
-	<el-table style='border-top:1px solid #99A9BF;' size='mini' :data="tableData" stripe style="width: 100%;" header-align='center'  :height="heights" ref="multipleTable" tooltip-effect="dark" @selection-change="handleSelectionChange">
+	<el-table  v-loading="loading" element-loading-text="加载中..."  element-loading-spinner="el-icon-loading" style='border-top:1px solid #99A9BF;' size='mini' :data="tableData" stripe style="width: 100%;" header-align='center'  :height="heights" ref="multipleTable" tooltip-effect="dark" @selection-change="handleSelectionChange">
 		<el-table-column type="selection" width="30"></el-table-column>
-		
 	   <el-table-column fixed header-align='center' prop="f_name" label="户主姓名" width="100" align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="f_tel" label="户主联系电话" width="130" align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_name" label="务工人员姓名" width="140" align='center'></el-table-column>
@@ -38,18 +38,26 @@
 	   <el-table-column header-align='center' prop="w_card" label="务工人员身份证号" width="180" align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_tel" label="务工人员联系电话" width="150" align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_body" label="疫情期间身体状况" width="180" align='center'></el-table-column>
-	   <el-table-column header-align='center' prop="w_out" label="是否已外出（是/否）" width="120" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_out" label="是否已外出（是/否）" width="120" align='center'>
+		   <template slot-scope="scope">{{scope.row.w_out==0?'否':(scope.row.w_out==1?'是':'')}} </template>
+	   </el-table-column>
 	   <el-table-column header-align='center' prop="w_company" label="务工企业名称" width="180" align='center'></el-table-column>
-	   <el-table-column header-align='center' prop="w_area" label="区域（县内/县外）" width="130" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_area" label="区域（县内/县外）" width="130" align='center'>
+		   <template slot-scope="scope">{{scope.row.w_area==0?'县外':(scope.row.w_area==1?'县内':'其他')}} </template>
+	   </el-table-column>
 	   <el-table-column header-align='center' prop="w_type" label="工种" width="180" align='center'></el-table-column>
-	   <el-table-column header-align='center' prop="w_work" label="疫情过后是否愿意留在县工业园区就业（是/否）" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_work" label="疫情过后是否愿意留在县工业园区就业（是/否）" width="180" align='center'>
+		   <template slot-scope="scope">{{scope.row.w_work==0?'否':(scope.row.w_work==1?'是':'其他')}} </template>
+	   </el-table-column>
 	   <el-table-column header-align='center' prop="t_compay" label="填报单位" width="180" align='center'></el-table-column>
-	   <el-table-column header-align='center' prop="t_time" label="填报时间" width="180" align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="t_time" label="填报时间" width="180" align='center'>
+		   <!-- <template slot-scope="scope">{{jsona(scope.row)}} </template> -->
+	   </el-table-column>
 	   <el-table-column header-align='center' prop="province" label="企业所在地的" width="180" align='center'></el-table-column>
 	    <el-table-column fixed="right" header-align='center' align='center' label="操作" width="150">
 	         <template slot-scope="scope">
 				 <!-- 编辑 -->
-	            <el-button @click='putate' type="primary" icon="el-icon-edit" circle></el-button>
+	            <el-button @click='putate(scope.row)' type="primary" icon="el-icon-edit" circle></el-button>
 				<!-- 删除 -->
 	             <el-button type="danger" @click='delect_date(scope.row)' icon="el-icon-delete" circle></el-button>
 	         </template>
@@ -58,7 +66,7 @@
 	
 	<div style="margin:10px 20px;float: left;">
 	    <el-button @click='$refs.multipleTable.clearSelection();'>取消选择</el-button>
-		 <el-button type="danger" @click='delect_date()' >批量删除</el-button>
+		 <el-button type="danger" @click='delect_date(multipleSelection)' >批量删除</el-button>
 	  </div>
 	 <!-- 分页插件 --> 
 	  <div style="float:right;margin:10px;">
@@ -112,6 +120,7 @@
 			<el-select v-model="create_date.w_area" placeholder="请选择">
 			  <el-option label="县内" value="1"></el-option>
 			  <el-option label="县外" value="0"></el-option>
+			  <el-option label="其他" value="2"></el-option>
 			</el-select>
 		</el-form-item>
 		<el-form-item label="工种" :label-width="formLabelWidth">
@@ -121,6 +130,7 @@
 			<el-select v-model="create_date.w_work" placeholder="请选择">
 			  <el-option label="是" value="1"></el-option>
 			  <el-option label="否" value="0"></el-option>
+			  <el-option label="其他" value="2"></el-option>
 			</el-select>
 		</el-form-item>
 		<el-form-item label="填报单位" :label-width="formLabelWidth">
@@ -130,11 +140,15 @@
 			<el-input v-model="create_date.t_time" autocomplete="off"></el-input>
 		</el-form-item>
 		<el-form-item label="企业所在地" :label-width="formLabelWidth">
-			<el-input v-model="create_date.province" autocomplete="off"></el-input>
+			<!-- <el-input v-model="create_date.province" autocomplete="off"></el-input> -->
+			<el-select v-model="create_date.province" placeholder="请选择">
+			  <el-option v-for='(i,index) in di_active' :label="i.name" :value="i.name"></el-option>
+			</el-select>
+			
 		</el-form-item>
 	  </el-form>
 	  <div slot="footer" class="dialog-footer">
-	    <el-button @click="dialogFormVisible = false">取 消</el-button>
+	    <el-button @click="dialogFormVisible = false;git_active(pages);">取 消</el-button>
 	    <el-button type="primary" @click="create_git">确 定</el-button>
 	  </div>
 	</el-dialog>
@@ -142,7 +156,6 @@
 	<el-dialog title="统计报表" :visible.sync="biao_show" top='3vh' width='60%'>
 	    <iframe src="biao.html" width="100%" height="500" style="border:none;"></iframe>
 	</el-dialog>
-	
 	
   </div>
 </body>
@@ -164,16 +177,18 @@
       el: '#app',
 	  computed:{
 		  heights(){return ($(window).height()-120)},
+		  
 	  },
       data: function() {
         return {
+			loading:false,
 			sai:{//赛选条件
-				f_name:'',
+				w_name:'',
 				w_card:'',
 				t_compay:'',
 				w_out:'',
 				page:1,
-				size:10
+				size:15
 			},
 			create_date:{//新增、编辑数据
 				f_name:'',//户主姓名
@@ -193,20 +208,26 @@
 				province:''
 			},
 			
-			
 			dialogFormVisible:false,
 			form:{name:'',region:'0'},
 			biao_show:false,
 			formLabelWidth: '220px',
 			total_01:0,//分页-总条数
-			ye_s:[10,15,20],
-			tiao:10,
+			ye_s:[15,20],
+			tiao:15,
 			pages:1,
-			
 			arenu:0,//0==新增 1==编辑
-			tableData: [],
+			tableData:[],
 			multipleTable:[],
-			date_url:'',//全局域名
+			date_url:'http://23347gd009.iok.la',//全局域名
+			
+			di_active:[
+				{name:'北京市'},{name:'天津市'},{name:'上海市'},{name:'重庆市'},{name:'河北省'},{name:'山西省'},{name:'辽宁省'},{name:'吉林省'},
+				{name:'黑龙江省'},{name:'江苏省'},{name:'浙江省'},{name:'安徽省'},{name:'福建省'},{name:'江西省'},{name:'山东省'},{name:'河南省'},
+				{name:'湖北省'},{name:'湖南省'},{name:'广东省'},{name:'海南省'},{name:'四川省'},{name:'贵州省'},{name:'云南省'},{name:'陕西省'},
+				{name:'甘肃省'},{name:'青海省'},{name:'台湾省'},{name:'内蒙古自治区'},{name:'广西壮族自治区'},{name:'西藏自治区'},{name:'宁夏回族自治区'},{name:'新疆维吾尔自治区'},
+				{name:'香港特别行政区'},{name:'澳门特别行政区'}
+			]
 		}
       },
 	  methods:{
@@ -226,6 +247,7 @@
 		  
 		  
 		  git_active(pages){//请求数据
+		      this.loading = true;
 		      this.sai.page = pages;//页数
 			  this.sai.size = this.tiao;//条数
 			  $.ajax({
@@ -234,8 +256,11 @@
 			    // 设置的是请求参数
 			    data:this.sai,
 			    dataType: 'json',
-			    success: function (res) {
+			    success: (res)=> {
+				if(Object.prototype.toString.call(res) != '[object Object]'){res = JSON.parse(res)}
+				   this.total_01 = res.count;
 			       this.tableData = res.data;
+				   this.loading = false;
 			    }
 			  })
 		  },
@@ -248,53 +273,52 @@
 			if(this.create_date.w_card){}else{this.$message({type: 'warning',message: '务工人员身份证号码不能为空！'});return false;}
 			if(this.create_date.w_tel){}else{this.$message({type: 'warning',message: '务工人员联系电话不能为空！'});return false;}
 			if(this.create_date.w_body){}else{this.$message({type: 'warning',message: '身体状况不能为空！'});return false;}
-			if(this.create_date.w_out){}else{this.$message({type: 'warning',message: '是否已外出不能为空！'});return false;}
+			if(this.create_date.w_out){}else{this.$message({type: 'warning',message: '请选择是否已外出！'});return false;}
 			if(this.create_date.w_company){}else{this.$message({type: 'warning',message: '务工企业名称不能为空！'});return false;}
-			if(this.create_date.w_area){}else{this.$message({type: 'warning',message: '区域不能为空！'});return false;}
+			if(this.create_date.w_area){}else{this.$message({type: 'warning',message: '请选择区域！'});return false;}
 			if(this.create_date.w_type){}else{this.$message({type: 'warning',message: '工种不能为空！'});return false;}
-			if(this.create_date.w_work){}else{this.$message({type: 'warning',message: '是否愿意留在县工业园区就业不能为空！'});return false;}
+			if(this.create_date.w_work){}else{this.$message({type: 'warning',message: '请选择是否愿意留在县工业园区就业！'});return false;}
 			if(this.create_date.t_compay){}else{this.$message({type: 'warning',message: '填报单位不能为空！'});return false;}
 			if(this.create_date.t_time){}else{this.$message({type: 'warning',message: '填报时间不能为空！'});return false;}
-			if(this.create_date.province){}else{this.$message({type: 'warning',message: '企业所在地不能为空！'});return false;}
+			if(this.create_date.province){}else{this.$message({type: 'warning',message: '请选择企业所在地！'});return false;}
 		    let ur = this.arenu==0?'/index/index/save':'/index/index/modify';
+		
+		    console.log(this.create_date,'123');
 			$.ajax({
 			  url: this.date_url+ur,
 			  type: 'post',
 			  // 设置的是请求参数
 			  data:this.create_date,
 			  dataType: 'json',
-			  success: function (res) {
+			  success:  (res)=> {
+				 console.log(res)
 			     this.dialogFormVisible = false;//关闭弹窗
-				 this.$message({type: 'success',message: '添加成功'});
+				 this.$message({type: 'success',message: '成功'});
 				 this.git_active(this.pages);//更新数据
 				 this.qin_date()//清除输入的数据
 			  }
 			})
 		  },
 		  
-		  delect_date(i){//删除||批量删除
-		    if(i){}else{return false}
-		    this.$confirm('是否确认删除?', '提示', {
-		              confirmButtonText: '确定',
-		              cancelButtonText: '取消',
-		              type: 'warning'
-		            }).then(() => {
-						let box= [];
-						if(i.length==1){
-							box=[];
-							box.push(i)
-						}else{
-							for(var i=0;i<i.length;i++){
-								box.push(i.id);
+		  delect_date(is){//删除||批量删除
+		    if(is){}else{return false}
+		    this.$confirm('是否确认删除?', '提示', {confirmButtonText: '确定',cancelButtonText: '取消',type: 'warning'}).then(() => {
+						var boxs= [];
+						if(Object.prototype.toString.call(is)== '[object Array]'){
+							for(var i=0;i<is.length;i++){
+								boxs.push(is[i].id);
 							}
+						}else{
+							boxs.push(is.id)
 						}
+						console.log(boxs)
 						$.ajax({
 						  url: this.date_url+'/index/index/batch_delete',
 						  type: 'post',
 						  // 设置的是请求参数
-						  data:box,
+						  data:{id:JSON.stringify(boxs)},
 						  dataType: 'json',
-						  success: function (res) {
+						  success: (res)=> {
 						     this.git_active(this.pages);//更新数据
 							 this.$message({type: 'success',message: '删除成功!'});
 						  }
@@ -307,6 +331,8 @@
 			  this.dialogFormVisible = true;
 		  },
 		  putate(i){//编辑
+		  
+		     console.log(i)
 		      this.arenu = 1;
 		      this.create_date = i;
 			  this.dialogFormVisible = true;
@@ -328,7 +354,8 @@
 			        contentType: false,
 			        processData: false,
 			       dataType: 'json',
-			       success: function (res) {
+			       success: (res)=> {
+					  this.$message({type: 'success',message: '上传成功!'});
 			          this.git_active(this.pages);//更新数据
 			       }
 			     })
@@ -341,6 +368,7 @@
 		    handleSizeChange(val) {
 		     console.log(`每页 ${val} 条`);
 			 this.tiao = val;//每页条数
+			 this.git_active(this.pages);//获取数据
 		   },
 		   handleCurrentChange(val) {
 		     // console.log(`当前页: ${val}`);
@@ -352,7 +380,7 @@
 	  mounted(){
 		  
 		  if(sessionStorage.id){}else{window.location.href = './static/login.html'}
-		  
+		  this.git_active(this.pages);//更新数据
 		  
 	  },
 	  
