@@ -13,9 +13,9 @@
 <div id="container">
 	<div id="output">
 		<div class="containerT">
-			<h1 style="font-weight: 600;">请输入口令</h1>
+			<p id='pa' style="font-weight: 600;">宜黄县务工人员信息管理系统</p>
 			<form class="form" id="entry_form" onkeydown="if(event.keyCode==13){return false;}">
-				<!-- <input type="text" placeholder="用户名" id="entry_name" value="admin"> -->
+				<input type="text" placeholder="用户名" id="entry_name" >
 				<input type="password" placeholder="口令" id="entry_password">
 				<button type="button" id="entry_btn">登录</button>
 				<div id="prompt" class="prompt"></div>
@@ -23,6 +23,50 @@
 		</div>
 	</div>
 </div>
-<script src="js/login.js" type="text/javascript"></script>
+<script type="text/javascript">
+	
+	$(function(){
+		   let date_url = 'http://23347gd009.iok.la';
+		   // let date_url = 'http://'+location.href;
+		   
+	        Victor("container", "output");   //登陆背景函数
+	        $("#entry_password").focus();
+	    $(document).keyup(function(event){
+	      if(event.keyCode ==13){
+	        $("#entry_btn").trigger("click");
+			 event.preventDefault();
+	      }
+	    });
+			$('#entry_btn').on('click',function(){c_function();});
+		function c_function(){
+				let val = $('#entry_password').val();
+				let name = $('#entry_name').val();
+				if(name){}else{alert('账户不能为空！');return false;}
+				if(val){}else{alert('密码不能为空！');return false;}
+				$.ajax({
+				  url:date_url+'/index/user/login',
+				  type: 'post',
+				  // 设置的是请求参数
+				  data:{
+					  username:name,
+					  password:val
+				  },
+				  dataType: 'json',
+				  success: (res)=> {
+					if(Object.prototype.toString.call(res) != '[object Object]'){res = JSON.parse(res)}
+					if(res.code==300){
+						alert('该用户不存在');
+					}else if(res.code==200){
+						console.log(res);
+						localStorage.username = res.data[0].username;
+						localStorage.territory = res.data[0].territory;
+						window.location.href = '../index.html';
+					}
+				  }
+				})
+		}
+	    });
+	
+</script>
 </body>
 </html>
