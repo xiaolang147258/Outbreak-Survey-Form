@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>LSQ</title>
+  <title>LSQ错误记录</title>
   <!-- import CSS -->
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <style>
@@ -36,34 +36,15 @@
   <div id="app" style="width: 100%;">
     <div style="width: 100%;float: left;">
 	
-	<el-button @click='tui' style='float:right;margin-top:5px;margin-left:20px;' type="danger">注销</el-button><p style="font-size:1.0333rem;text-align:right;color:#606266;margin-right:0.8333rem">欢迎您好：  {{territory}}  管理员，欢迎使用宜黄县务工人员信息管理系统 </p >
-	
 	<div style="width:100%;height:50px;margin-bottom: 0.1333rem;">
 	  
-	  <el-input class='put' v-model="sai.w_name" placeholder="务工人员姓名" clearable></el-input>
-	  <el-input class='put' style='width:200px;' v-model="sai.w_card" placeholder="身份证" clearable></el-input>  
+	  
 	  <el-input v-show='username=="admin"' class='put' v-model="sai.t_compay" placeholder="所属乡镇" clearable></el-input>
-	  
-	  <el-select class='put' style='width:150px;' v-model='sai.w_out' placeholder="是否已外出" clearable>
-	    <el-option label="是" value="1"></el-option>
-	    <el-option label="否" value="0"></el-option>
-	  </el-select>
-	  
-	  <el-select class='put' style='width:200px;' v-model='sai.w_work' placeholder="是否愿意留在县工业园区就业" clearable>
-	    <el-option label="是" value="1"></el-option>
-	    <el-option label="否" value="0"></el-option>
-	  </el-select>
 	  
 	  <el-button style='padding:12px 10px;' @click='git_active(1)' type="success">查询</el-button>
 	  
 	  
-	  <el-button @click='to_error' style='float:right;margin-top:5px;padding:12px 10px;' type="warning">错误记录</el-button>
-	  <input @change="handleFile" type="file" id="excel-file" style="BACKGROUND-COLOR: transparent;opacity:0;display: none;">
-	  <el-button @click='to_updete' style='float:right;margin-top:5px;padding:12px 10px;' type="primary">导出 Excel</el-button>
-	  <el-button @click='update' style='float:right;margin-top:5px;margin-right:10px;padding:12px 10px;' type="primary">上传 Excel</el-button>
-	  <el-button @click='create' style='float:right;margin-top:5px;margin-left:0;padding:12px 10px;' type="primary">新增</el-button>
-	  <el-button @click='biao_show=true' style='float:right;margin-top:5px;margin-right:10px;padding:12px 10px;margin-left:0;' type="primary">统计表</el-button>
-	  
+	  <el-button @click='to_updete' style='float:right;margin-top:5px;' type="primary">导出 Excel</el-button>
 	</div>
 	
 	<el-table 
@@ -95,25 +76,26 @@
 		        </el-form>
 		      </template>
 		    </el-table-column>
+		
 	   <el-table-column header-align='center' prop="w_name" label="务工人员姓名"  align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_sex" label="务工人员性别"  align='center'></el-table-column>
-	   <el-table-column header-align='center' prop="w_card" label="务工人员身份证号"  align='center'></el-table-column>
+	   <el-table-column header-align='center' prop="w_card" label="务工人员身份证号" align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_tel" label="务工人员联系电话"  align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_body" label="疫情期间身体状况"  align='center'></el-table-column>
 	   <el-table-column header-align='center' prop="w_out" label="是否已外出（是/否）"  align='center'>
 		   <template slot-scope="scope">{{scope.row.w_out==0?'否':(scope.row.w_out==1?'是':'')}} </template>
 	   </el-table-column>
 	   <el-table-column header-align='center' prop="w_company" label="务工企业名称"  align='center'></el-table-column>
-	   <el-table-column header-align='center' prop="w_area" label="区域" width="100" align='center'>
+	   <el-table-column header-align='center' prop="w_area" label="区域"  align='center'>
 		   <template slot-scope="scope">{{scope.row.w_area==0?'县外':(scope.row.w_area==1?'县内':'其他')}} </template>
 	   </el-table-column>
 	   <el-table-column header-align='center' prop="county" label="所属村"  align='center'></el-table-column>
-	    <el-table-column header-align='center' align='center' label="操作" >
+	    <el-table-column fixed="right" header-align='center' align='center' label="操作" >
 	         <template slot-scope="scope">
 				 <!-- 编辑 -->
 	            <el-button @click.stop='putate(scope.row)' type="primary" icon="el-icon-edit" circle></el-button>
 				<!-- 删除 -->
-	             <el-button @click.stop='delect_date(scope.row)' type="danger" icon="el-icon-delete" circle></el-button>
+	             <!-- <el-button @click.stop='delect_date(scope.row)' type="danger" icon="el-icon-delete" circle></el-button> -->
 	         </template>
 	    </el-table-column>
 	</el-table>
@@ -198,7 +180,6 @@
 			<el-input v-model="create_date.t_time" autocomplete="off"></el-input>
 		</el-form-item>
 		<el-form-item label="企业所在地" :label-width="formLabelWidth">
-			<!-- <el-input v-model="create_date.province" autocomplete="off"></el-input> -->
 			<el-select v-model="create_date.province" placeholder="请选择">
 			   <el-option v-for='(i,index) in di_active' :label="i.name" :value="i.name"></el-option>
 			</el-select>
@@ -210,9 +191,9 @@
 	  </div>
 	</el-dialog>
 	
-	<el-dialog title="统计报表" :visible.sync="biao_show" top='3vh' width='60%'>
-	    <iframe src="biao.html" width="100%" height="540" style="border:none;"></iframe>
-	</el-dialog>
+	<!-- <el-dialog title="统计报表" :visible.sync="biao_show" top='3vh' width='60%'> -->
+	    <!-- <iframe src="biao.html" width="100%" height="540" style="border:none;"></iframe> -->
+	<!-- </el-dialog> -->
 	
   </div>
 </body>
@@ -227,8 +208,6 @@
 	  $('#meng_ch').css('margin-top',($(window).height()-20)/2);
 	  $('#meng_ch').css('display','block');
 	  $('#psa').css('display','block');
-	  
-	  // document.write(localStorage.territory);
 	  
     new Vue({
       el: '#app',
@@ -282,8 +261,8 @@
 			arenu:0,//0==新增 1==编辑
 			tableData:[],
 			multipleTable:[],
-			date_url:'http://23347gd009.iok.la',//全局域名
-			// date_url:'',
+			date_url:'http://2949d3408t.qicp.vip',//全局域名
+			// date_url:'http://www.luosenqiao.top:82',
 			di_active:[
 				{name:'北京市'},{name:'天津市'},{name:'上海市'},{name:'重庆市'},{name:'河北省'},{name:'山西省'},{name:'辽宁省'},{name:'吉林省'},
 				{name:'黑龙江省'},{name:'江苏省'},{name:'浙江省'},{name:'安徽省'},{name:'福建省'},{name:'江西省'},{name:'山东省'},{name:'河南省'},
@@ -294,13 +273,9 @@
 		}
       },
 	  methods:{
-		  to_error(){//跳转错误信息页面
-			  window.open('error.html'); 
-		  },
-		  
 		  //导出表格
 		  to_updete(){
-			let urls = this.date_url+`/index/index/export_excel?w_name=`+this.sai.w_name+`&w_card=`+this.sai.w_card+`&t_compay=`+this.sai.t_compay+`&w_out=`+this.sai.w_out+`&w_work=`+this.sai.w_work+`&username=`+localStorage.username;
+			let urls = this.date_url+`/index/index/export_error_excel?&t_compay=`+this.sai.t_compay+`&username=`+localStorage.username;
 			window.location.href = urls;
 		  },
 		  
@@ -327,9 +302,7 @@
 		                      this.expands.remove(row.id);
 		                  }
 		  },
-
-
-
+		  
 		  qin_date(){//清空添加编辑内容数据
 			this.create_date.f_name = '';this.create_date.f_name='';
 			this.create_date.f_tel='';this.create_date.w_name='';
@@ -344,18 +317,19 @@
 							 this.create_date.province = ''
 							 this.git_active(this.pages);
 		  },
-
-      git_active(pages){//请求数据
+		  
+		  git_active(pages){//请求数据
 		      // this.date_url = 'http://'+location.host;
 		      this.loading = true;
 		      this.sai.page = pages;//页数
 			  this.sai.size = this.tiao;//条数
 			  this.sai.username = localStorage.username;
+			  this.sai.t_time = '';
 			  if(localStorage.username!='admin'){
 				  this.sai.t_compay= localStorage.territory;
 			  }
 			  $.ajax({
-			    url:this.date_url+'/index/index/query',
+			    url:this.date_url+'/index/index/get_list_page',
 			    type: 'post',
 			    // 设置的是请求参数
 			    data:this.sai,
@@ -365,7 +339,7 @@
 				   this.total_01 = res.count;
 			       this.tableData = res.data;
 				   this.loading = false;
-				   $('#mengs').fadeOut(300); 
+				   $('#mengs').fadeOut(300);
 			    }
 			  })
 		  },
@@ -386,7 +360,7 @@
 			if(this.create_date.t_compay){}else{this.$message({type: 'warning',message: '填报单位不能为空！'});return false;}
 			if(this.create_date.t_time){}else{this.$message({type: 'warning',message: '填报时间不能为空！'});return false;}
 			if(this.create_date.province){}else{this.$message({type: 'warning',message: '请选择企业所在地！'});return false;}
-		    let ur = this.arenu==0?'/index/index/save':'/index/index/modify';
+		    let ur = this.arenu==0?'/index/index/save':'/index/index/update_error';
 		    console.log(this.create_date,'123');
 			$.ajax({
 			  url: this.date_url+ur,
@@ -418,7 +392,7 @@
 						}
 						console.log(boxs)
 						$.ajax({
-						  url: this.date_url+'/index/index/batch_delete',
+						  url: this.date_url+'/index/index/batch_del_error',
 						  type: 'post',
 						  // 设置的是请求参数
 						  data:{id:JSON.stringify(boxs)},
